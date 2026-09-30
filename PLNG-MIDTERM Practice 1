@@ -1,0 +1,159 @@
+import sys
+
+def program_1():
+    print("\n--- Running Program 1: Real Number Statistics ---")
+    numbers = []
+    print("Enter 10 real numbers (negative and positive):")
+    for i in range(10):
+        while True:
+            try:
+                num = float(input(f"Element {i+1}: "))
+                numbers.append(num)
+                break
+            except ValueError:
+                print("Invalid input. Please enter a valid real number.")
+
+    pos_sum = 0
+    pos_count = 0
+    for num in numbers:
+        if num > 0:
+            pos_sum += num
+            pos_count += 1
+    pos_avg = pos_sum / pos_count if pos_count > 0 else 0
+
+    print(f"\nSum of positive numbers: {pos_sum}")
+    print(f"Average of positive numbers: {pos_avg}")
+
+    neg_count = 0
+    for num in numbers:
+        if num < 0:
+            neg_count += 1
+    print(f"Count of negative numbers: {neg_count}")
+
+    min_val = numbers[0] if numbers else 0
+    for num in numbers:
+        if num < min_val:
+            min_val = num
+    print(f"Minimum value of the array: {min_val}")
+
+
+def program_2():
+    print("\n--- Running Program 2: Duplicate Removal & Extremes ---")
+    numbers = []
+    print("Enter 8 integer numbers:")
+    for i in range(8):
+        while True:
+            try:
+                num = int(input(f"Element {i+1}: "))
+                numbers.append(num)
+                break
+            except ValueError:
+                print("Invalid input. Please enter an integer.")
+
+    unique_numbers = []
+    for num in numbers:
+        if num not in unique_numbers:
+            unique_numbers.append(num)
+    print(f"\nArray after removing duplicates: {unique_numbers}")
+
+    if len(unique_numbers) < 2:
+        print("Not enough unique elements to find second largest/smallest values.")
+    else:
+        unique_numbers.sort()
+        second_smallest = unique_numbers[1]
+        second_largest = unique_numbers[-2]
+        print(f"Second smallest element: {second_smallest}")
+        print(f"Second largest element: {second_largest}")
+
+
+def program_3():
+    # Fixed to precisely match the requested sequence and output text formatting
+    print("OUTPUT")
+    user_input = input("Enter Data in Array: ")
+    array = [int(x) for x in user_input.split()]
+    
+    print("Stored Data in Array:", " ".join(map(str, array)))
+    
+    try:
+        pos = int(input("Enter poss. of Element to Delete: "))
+        if 0 <= pos < len(array):
+            del array[pos]
+            print("New data in Array:", " ".join(map(str, array)))
+        else:
+            print("Error: Position out of range.")
+    except ValueError:
+        print("Error: Please enter a valid numerical position.")
+
+
+def program_4():
+    print("\nOUTPUT:")
+    try:
+        size = int(input("Enter Size of Array : "))
+        user_input = input(f"Enter any {size} elements in Array: ")
+        array = [int(x) for x in user_input.split()[:size]]
+        
+        even_elements = [str(x) for x in array if x % 2 == 0]
+        odd_elements = [str(x) for x in array if x % 2 != 0]
+        
+        print("Even Elements:", " ".join(even_elements))
+        print("Odd Elements:", " ".join(odd_elements))
+    except ValueError:
+        print("Invalid numerical inputs.")
+
+
+def program_5():
+    print("\nOUTPUT :")
+    for i in range(1, 5):
+        print("*" + "A*" * (i - 1))
+
+
+def program_6():
+    basic_salary = 12000
+    da = 0.12 * basic_salary
+    hra = 150
+    ta = 120
+    others = 450
+    
+    pf = 0.14 * basic_salary
+    it = 0.15 * basic_salary
+    
+    net_salary = basic_salary + da + hra + ta + others - (pf + it)
+    
+    print(f"\nFINAL OUTPUT :")
+    print(f"Net Salary = $ {net_salary:.2f}")
+
+
+def main():
+    while True:
+        print("\nFINAL OUTPUT : Choose the program you want to run")
+        print("Program #1")
+        print("Program #2")
+        print("Program #3")
+        print("Program #4")
+        print("Program #5")
+        print("Program #6")
+        
+        choice = input("Your choice (1-6): ").strip()
+        
+        if choice == '1': program_1()
+        elif choice == '2': program_2()
+        elif choice == '3': program_3()
+        elif choice == '4': program_4()
+        elif choice == '5': program_5()
+        elif choice == '6': program_6()
+        else:
+            print("Invalid selection. Please choose an option between 1 and 6.")
+            continue
+        
+        while True:
+            continue_choice = input("\nDo you want to continue ? Y/N: ").strip().upper()
+            if continue_choice in ['Y', 'YES']:
+                break
+            elif continue_choice in ['N', 'NO']:
+                print("Exiting program. Goodbye!")
+                sys.exit()
+            else:
+                print("Please enter Y or N.")
+
+if __name__ == "__main__":
+    main()
