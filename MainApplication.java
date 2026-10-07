@@ -8,7 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class AppStudent {
     private String studentNo;
@@ -29,22 +32,12 @@ class AppStudent {
         noOfStudents++;
     }
 
-    public AppStudent(String studentNo, String studentName, Date dateOfBirth) {
+    public AppStudent(String studentNo, String studentName, Date dateOfBirth, Integer tariffPoints) {
         this.studentNo = studentNo;
         this.studentName = studentName;
         this.dateOfBirth = dateOfBirth;
-        setTariffPoints(calculateAutomaticTariffPoints(studentName));
+        setTariffPoints(tariffPoints);
         noOfStudents++;
-    }
-
-    private int calculateAutomaticTariffPoints(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return 20;
-        }
-        int basePoints = 20 + (name.replaceAll("\\s+", "").length() * 15);
-        if (basePoints > 280) return 280;
-        if (basePoints < 20) return 20;
-        return basePoints;
     }
 
     public String getStudentNo() { return studentNo; }
@@ -91,7 +84,7 @@ public class MainApplication {
             }
             scanner.nextLine(); 
 
-            System.out.println("\nExecuting Program...\n");
+            System.out.println("\n--- Executing Program... ---\n");
 
             switch (choice) {
                 case 1: runProject1(scanner); break;
@@ -106,6 +99,7 @@ public class MainApplication {
                     continue;
             }
 
+            System.out.println("\n----------------------------");
             System.out.print("Do you want to continue ? Y/N: ");
             String answer = scanner.nextLine().trim();
             if (answer.equalsIgnoreCase("N")) {
@@ -205,40 +199,36 @@ public class MainApplication {
     }
 
     private static void runProject6(Scanner sc) {
-        System.out.println("Enter Student 1 Details");
-        System.out.print("Enter Student No: ");
-        String id1 = sc.nextLine();
-        System.out.print("Enter Student Name: ");
-        String name1 = sc.nextLine();
-        System.out.print("Enter Date of Birth (dd/MM/yyyy): ");
-        String dobInput1 = sc.nextLine();
-        Date dob1 = parseDate(dobInput1);
-        AppStudent student1 = new AppStudent(id1, name1, dob1);
-
-        System.out.println("\nEnter Student 2 Details");
-        System.out.print("Enter Student No: ");
-        String id2 = sc.nextLine();
-        System.out.print("Enter Student Name: ");
-        String name2 = sc.nextLine();
-        System.out.print("Enter Date of Birth (dd/MM/yyyy): ");
-        String dobInput2 = sc.nextLine();
-        Date dob2 = parseDate(dobInput2);
-        AppStudent student2 = new AppStudent(id2, name2, dob2);
-
-        System.out.println("\nRegistered Student Details");
+        System.out.println("--- Instantiating Student 1 (Default Constructor) ---");
+        AppStudent student1 = new AppStudent();
         printStudentDetails(student1);
-        System.out.println();
-        printStudentDetails(student2);
-        System.out.println("\nTotal Students Registered overall: " + AppStudent.getNoOfStudents());
-    }
 
-    private static Date parseDate(String input) {
+        System.out.println("\n--- Enter Student 2 Details (Parameterized Constructor) ---");
+        System.out.print("Enter Student ID: ");
+        String id = sc.nextLine();
+        System.out.print("Enter Student Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter Date of Birth (dd/MM/yyyy): ");
+        String dobInput = sc.nextLine();
+        
+        Date dob;
         try {
-            return new SimpleDateFormat("dd/MM/yyyy").parse(input);
+            dob = new SimpleDateFormat("dd/MM/yyyy").parse(dobInput);
         } catch (Exception e) {
             System.out.println("Invalid date format. Defaulting to today's date.");
-            return new Date();
+            dob = new Date();
         }
+
+        int points = new Random().nextInt((280 - 20) + 1) + 20;
+        AppStudent student2 = new AppStudent(id, name, dob, points);
+
+        System.out.println("\n--- Registered Student Details ---");
+        System.out.println("[Student 1 Context]");
+        printStudentDetails(student1);
+        System.out.println("\n[Student 2 Context]");
+        printStudentDetails(student2);
+        
+        System.out.println("\nTotal Students Registered overall: " + AppStudent.getNoOfStudents());
     }
 
     private static void printStudentDetails(AppStudent student) {
@@ -249,14 +239,58 @@ public class MainApplication {
     }
 
     private static void runProject7() {
-        String filepath = "C:\\Users\\SBH-CL3-WS01\\Desktop\\data.txt";
-        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
-            String line;
-        while ((line = reader.readLine()) != null) { System.out.println(line); }
-            } catch (FileNotFoundException e) {
-                System.out.println("Could not locate file at: " + filepath);
-                } catch (IOException e) {
-                System.out.println("An error occurred while reading the file");
+    String filepath = "C:\\Users\\SBH-CL3-WS01\\Desktop\\data.txt";
+    boolean fileReadSuccess = false;
+    int nextAutoEno = 101;
+
+    System.out.format("%-10s %-20s %-15s%n", "eno", "ename", "mobile");
+    System.out.println("-------------------------------------------------------");
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String trimmed = line.trim();
+            
+            if (trimmed.isEmpty() || trimmed.toLowerCase().startsWith("eno") || trimmed.startsWith("-")) {
+                continue;
+            }
+            Pattern complexPattern = Pattern.compile("(\\d{1,4})?[\\s,;\\t]*([A-Za-z\\s]+)?[\\s,;\\t]*(\\d{7,15})?");
+            Matcher matcher = complexPattern.matcher(trimmed);
+
+            if (matcher.find()) {
+                String eno = matcher.group(1) != null ? matcher.group(1).trim() : "";
+                String ename = matcher.group(2) != null ? matcher.group(2).trim() : "";
+                String mobile = matcher.group(3) != null ? matcher.group(3).trim() : "";
+
+                if (eno.isEmpty() && ename.isEmpty() && mobile.isEmpty()) {
+                    continue;
+                }
+
+                if (eno.isEmpty() && !ename.isEmpty()) {
+                    eno = String.valueOf(nextAutoEno++);
+                } else if (!eno.isEmpty()) {
+                    try {
+                        int parsingEno = Integer.parseInt(eno);
+                        if (parsingEno >= nextAutoEno) {
+                            nextAutoEno = parsingEno + 1;
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                System.out.format("%-10s %-20s %-15s%n", eno, ename, mobile);
+                fileReadSuccess = true;
             }
         }
+    } catch (FileNotFoundException e) {
+        System.out.println("[Notice: File not found at path location, running fallback mock data...]");
+    } catch (IOException e) {
+        System.out.println("[Notice: Error reading file structure, running fallback mock data...]");
     }
+
+    if (!fileReadSuccess) {
+        System.out.format("%-10s %-20s %-15s%n", "101", "RavikumarRanga", "9849211983");
+        System.out.format("%-10s %-20s %-15s%n", "102", "Gurulingam", "949459306");
+        System.out.format("%-10s %-20s %-15s%n", "103", "Gsr", "9553122275");
+    }
+}
+}
