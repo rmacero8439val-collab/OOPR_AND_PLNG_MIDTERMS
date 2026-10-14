@@ -1,11 +1,11 @@
-package com.mycompany.mavenproject1;
+package com.mycompany.mavenproject2;
 
 import java.util.Scanner;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-public class LibrarySystem {
+public class NewClass {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
@@ -78,22 +78,6 @@ public class LibrarySystem {
             }
         } while (!validDates);
 
-        long totalDays = ChronoUnit.DAYS.between(issueDate, dueDate);
-        
-        int daysReading = -1;
-        while (daysReading < 0) {
-            System.out.print("Enter how many days you have been reading: ");
-            if (scanner.hasNextInt()) {
-                daysReading = scanner.nextInt();
-                if (daysReading < 0) {
-                    System.out.println("Invalid input! Days spent reading cannot be negative.");
-                }
-            } else {
-                System.out.println("Invalid input! Please enter a valid whole number (no words or letters).");
-                scanner.next();
-            }
-        }
-        scanner.nextLine();
         boolean proceed = false;
         while (true) {
             System.out.print("\nAll data collected. Do you want to calculate your reading summary? (Y/N): ");
@@ -109,31 +93,41 @@ public class LibrarySystem {
                 System.out.println("Invalid choice!");
             }
         }
+
         if (!proceed) {
             System.out.println("Calculation cancelled. Exiting system. Have a nice day!");
             scanner.close();
             return;
         }
+
         double percentageRead = ((double) pagesRead / totalPages) * 100;
         int pagesLeft = totalPages - pagesRead;
-        long daysRemaining = totalDays - daysReading;
+
+        LocalDate today = LocalDate.now(); 
+        long daysRemaining = ChronoUnit.DAYS.between(today, dueDate);
 
         System.out.println("\nHello " + name + ", here is your reading summary:");
         System.out.println("You have read " + (int) percentageRead + "% of the book.");
 
+        if (pagesLeft == 0) {
+            System.out.println("Congratulations! You have already finished the book.");
+        }
+
         if (daysRemaining < 0) {
             long daysOverdue = Math.abs(daysRemaining);
-            System.out.println("OVERDUE CRITICAL NOTICE: This book is " + daysOverdue + " day(s) past its due date!");
-            System.out.println("Please drop everything and bring it back to the library immediately to avoid compounding fines.");
+            System.out.println("Reminder: The return window for this book closed " + daysOverdue + " day(s) ago.");
+            System.out.println("Please plan to return it to the library soon to prevent or settle any late fees.");
         } else if (daysRemaining == 0) {
-            System.out.println("TODAY IS THE DUE DATE! You need to return this book today.");
+            System.out.println("Notice: Today is the due date! Please arrange to return this book today.");
             if (pagesLeft > 0) {
-                System.out.println("You still have " + pagesLeft + " pages left. Better speed-read it right now!");
+                System.out.println("You still have " + pagesLeft + " pages left to finish.");
             }
         } else {
             int pagesPerDay = (int) Math.ceil((double) pagesLeft / daysRemaining);
             System.out.println("You have " + daysRemaining + " days remaining to return the book.");
-            System.out.println("To finish on time, you should read " + pagesPerDay + " pages per day.");
+            if (pagesLeft > 0) {
+                System.out.println("To finish exactly on time, you should read " + pagesPerDay + " pages per day.");
+            }
         }
 
         scanner.close();
