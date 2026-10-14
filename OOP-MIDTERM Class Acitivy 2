@@ -1,0 +1,141 @@
+package com.mycompany.mavenproject1;
+
+import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+
+public class LibrarySystem {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+
+        String name = "";
+        while (name.isEmpty()) {
+            System.out.print("Enter your name: ");
+            String input = scanner.nextLine().trim();
+            
+            if (input.matches("^[a-zA-Z\\s]+$")) {
+                name = input;
+            } else {
+                System.out.println("Invalid input! Name must contain letters only (no numbers or special characters).");
+            }
+        }
+
+        int totalPages = -1;
+        while (totalPages <= 0) {
+            System.out.print("How many pages does the book have?: ");
+            if (scanner.hasNextInt()) {
+                totalPages = scanner.nextInt();
+                if (totalPages <= 0) {
+                    System.out.println("Invalid input! Total pages must be greater than 0.");
+                }
+            } else {
+                System.out.println("Invalid input! Please enter a valid whole number (no words or letters).");
+                scanner.next();
+            }
+        }
+
+        int pagesRead = -1;
+        while (pagesRead < 0 || pagesRead > totalPages) {
+            System.out.print("How many pages have you read?: ");
+            if (scanner.hasNextInt()) {
+                pagesRead = scanner.nextInt();
+                if (pagesRead < 0) {
+                    System.out.println("Invalid input! Pages read cannot be negative.");
+                } else if (pagesRead > totalPages) {
+                    System.out.println("Invalid input! Pages read cannot exceed total pages (" + totalPages + ").");
+                }
+            } else {
+                System.out.println("Invalid input! Please enter a valid whole number (no words or letters).");
+                scanner.next();
+            }
+        }
+        scanner.nextLine();
+
+        LocalDate issueDate = null;
+        LocalDate dueDate = null;
+        boolean validDates = false;
+
+        do {
+            System.out.print("Enter Issue Date (dd/mm/yyyy): ");
+            String issueInput = scanner.nextLine().trim();
+
+            System.out.print("Enter Due Date (dd/mm/yyyy): ");
+            String dueInput = scanner.nextLine().trim();
+
+            try {
+                issueDate = LocalDate.parse(issueInput, formatter);
+                dueDate = LocalDate.parse(dueInput, formatter);
+
+                if (issueDate.isAfter(dueDate)) {
+                    System.out.println("Invalid dates! Issue date cannot be after the due date. Please try again.\n");
+                } else {
+                    validDates = true;
+                }
+            } catch (Exception e) {
+                System.out.println("Error parsing dates. Please use numbers in the dd/mm/yyyy format (e.g., 1/8/2026).\n");
+            }
+        } while (!validDates);
+
+        long totalDays = ChronoUnit.DAYS.between(issueDate, dueDate);
+        
+        int daysReading = -1;
+        while (daysReading < 0) {
+            System.out.print("Enter how many days you have been reading: ");
+            if (scanner.hasNextInt()) {
+                daysReading = scanner.nextInt();
+                if (daysReading < 0) {
+                    System.out.println("Invalid input! Days spent reading cannot be negative.");
+                }
+            } else {
+                System.out.println("Invalid input! Please enter a valid whole number (no words or letters).");
+                scanner.next();
+            }
+        }
+        scanner.nextLine();
+        boolean proceed = false;
+        while (true) {
+            System.out.print("\nAll data collected. Do you want to calculate your reading summary? (Y/N): ");
+            String choice = scanner.nextLine().trim().toLowerCase();
+
+            if (choice.equals("yes") || choice.equals("y")) {
+                proceed = true;
+                break;
+            } else if (choice.equals("no") || choice.equals("n")) {
+                proceed = false;
+                break;
+            } else {
+                System.out.println("Invalid choice!");
+            }
+        }
+        if (!proceed) {
+            System.out.println("Calculation cancelled. Exiting system. Have a nice day!");
+            scanner.close();
+            return;
+        }
+        double percentageRead = ((double) pagesRead / totalPages) * 100;
+        int pagesLeft = totalPages - pagesRead;
+        long daysRemaining = totalDays - daysReading;
+
+        System.out.println("\nHello " + name + ", here is your reading summary:");
+        System.out.println("You have read " + (int) percentageRead + "% of the book.");
+
+        if (daysRemaining < 0) {
+            long daysOverdue = Math.abs(daysRemaining);
+            System.out.println("OVERDUE CRITICAL NOTICE: This book is " + daysOverdue + " day(s) past its due date!");
+            System.out.println("Please drop everything and bring it back to the library immediately to avoid compounding fines.");
+        } else if (daysRemaining == 0) {
+            System.out.println("TODAY IS THE DUE DATE! You need to return this book today.");
+            if (pagesLeft > 0) {
+                System.out.println("You still have " + pagesLeft + " pages left. Better speed-read it right now!");
+            }
+        } else {
+            int pagesPerDay = (int) Math.ceil((double) pagesLeft / daysRemaining);
+            System.out.println("You have " + daysRemaining + " days remaining to return the book.");
+            System.out.println("To finish on time, you should read " + pagesPerDay + " pages per day.");
+        }
+
+        scanner.close();
+    }
+}
